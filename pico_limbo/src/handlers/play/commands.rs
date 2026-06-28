@@ -33,8 +33,6 @@ impl PacketHandler for ChatMessagePacket {
         let mut batch = Batch::new();
         if let Some(command) = self.get_command() {
             run_command(client_state, server_state, command, &mut batch);
-        } else {
-            info!("<{}> {}", client_state.get_username(), self.get_message());
         }
         Ok(batch)
     }
