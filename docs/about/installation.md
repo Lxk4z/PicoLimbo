@@ -158,6 +158,8 @@ Select the binary that matches your system:
 | **`pico_limbo_macos-aarch64.tar.gz`**      | macOS         | Apple Silicon    |
 | **`pico_limbo_windows-x86_64.zip`**        | Windows       | Intel/AMD 64-bit |
 
+GNU/Linux builds require glibc 2.28 or newer. They support maintained distributions such as Debian 13, Ubuntu 22.04 LTS, and AlmaLinux OS 9; older distributions may not be supported.
+
 #### Manual Installation
 
 1. **Download** the appropriate binary for your system from the releases page
@@ -182,14 +184,14 @@ A Java wrapper for PicoLimbo is available on [Modrinth](https://modrinth.com/plu
 
 Since the Java wrapper uses native code, it cannot run on all platforms. It is only compatible with:
 
-- **GNU/Linux** (e.g., Debian, Ubuntu) - x64 CPUs (AMD/Intel) or arm64 CPUs (e.g., Raspberry Pi)
+- **GNU/Linux** with glibc 2.28 or newer (e.g., Debian 13, Ubuntu 22.04 LTS, AlmaLinux OS 9) - x64 CPUs (AMD/Intel) or arm64 CPUs (e.g., Raspberry Pi)
 - **Windows** - x64 CPUs (AMD/Intel)
 - **macOS** - M-series chips (M1/M2/M3+)
 
 If you are unsure whether it'll work on your system, try it. Most hosting providers use GNU/Linux with x64 CPUs, so you should be fine.
 
 > [!NOTE]
-> Since the wrapper uses glibc builds of PicoLimbo, Alpine Linux is **not supported** by the wrapper.
+> Since the wrapper uses glibc builds of PicoLimbo, Alpine Linux and older, unmaintained distributions may not be supported.
 
 ### Installation on Proxies
 

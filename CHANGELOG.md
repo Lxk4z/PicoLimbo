@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Java Wrapper's minimum Java version to 25
 - Updated Java Wrapper's Velocity, Bungeecord and JNA versions
 
+### Fixed
+
+- GNU/Linux binaries and the Java Wrapper now support glibc 2.28 and newer
+
 ## [1.13.1+mc26.2] - 2026-06-22
 
 ### Fixed
