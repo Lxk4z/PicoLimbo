@@ -92,13 +92,7 @@ modrinth {
             else -> "release"
         }
     )
-    val uploadFileOverride = providers.gradleProperty("modrinthUploadFile").orNull
-    if (uploadFileOverride != null) {
-        uploadFile.set(rootProject.file(uploadFileOverride))
-        autoAddDependsOn.set(false)
-    } else {
-        uploadFile.set(tasks.jar)
-    }
+    uploadFile.set(tasks.jar)
     gameVersions.addAll(
         "1.7.2", "1.7.3", "1.7.4", "1.7.5", "1.7.6", "1.7.7", "1.7.8", "1.7.9", "1.7.10",
         "1.8", "1.8.1", "1.8.2", "1.8.3", "1.8.4", "1.8.5", "1.8.6", "1.8.7", "1.8.8", "1.8.9",
