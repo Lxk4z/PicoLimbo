@@ -289,7 +289,7 @@ jobs:
 
       - name: Rename and Prepare Artifact
         run: |
-          mv wrapper/build/libs/wrapper.jar ../${{ env.BINARY_NAME }}_java_wrapper.jar
+          mv wrapper/build/libs/pico_limbo_java_wrapper.jar ../${{ env.BINARY_NAME }}_java_wrapper.jar
 
       - name: Upload Java Artifact
         uses: actions/upload-artifact@v4
@@ -436,6 +436,37 @@ jobs:
         run: |
           docker buildx imagetools inspect ghcr.io/${{ env.REPO_LC }}:${{ steps.meta.outputs.version }}
 
+  publish-java-wrapper:
+    runs-on: ubuntu-latest
+    needs: build-java
+
+    defaults:
+      run:
+        working-directory: java_wrapper
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'gradle'
+
+      - name: Download Java Wrapper
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}_java_wrapper
+          path: java_wrapper/wrapper/build/libs
+
+      - name: Publish to Modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        run: |
+          chmod +x gradlew
+          ./gradlew :wrapper:modrinth -PmodrinthUploadFile=wrapper/build/libs/pico_limbo_java_wrapper.jar
 
   release:
     permissions:

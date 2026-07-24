@@ -71,9 +71,20 @@ cd java_wrapper
 ## Verification
 
 After the build completes, you can find the resulting JAR file at:
-`java_wrapper/wrapper/build/libs/wrapper.jar`
+`java_wrapper/wrapper/build/libs/pico_limbo_java_wrapper.jar`
 
 To verify the installation, you can try running the standalone version or loading it into your proxy server of choice.
+
+## Publishing to Modrinth
+
+Set a Modrinth personal access token with the `CREATE_VERSION` scope and run the publishing task:
+
+```bash
+cd java_wrapper
+MODRINTH_TOKEN=<token> ./gradlew :wrapper:modrinth
+```
+
+The version and release type are derived from `pico_limbo/Cargo.toml`. Supported Minecraft versions are listed explicitly in `java_wrapper/wrapper/build.gradle.kts` and must be extended when a new stable Minecraft release is added to Modrinth.
 
 ## Troubleshooting
 
