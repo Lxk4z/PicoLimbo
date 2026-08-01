@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- File logging (#53)
+
 ### Updated
 
 - Updated to Rust 1.97.0

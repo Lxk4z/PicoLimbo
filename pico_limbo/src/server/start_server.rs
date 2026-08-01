@@ -1,4 +1,5 @@
 use crate::banner;
+use crate::cli::Cli;
 use crate::configuration::TaggedForwarding;
 use crate::configuration::boss_bar::BossBarConfig;
 use crate::configuration::config::{Config, ConfigError, load_or_create};
@@ -8,19 +9,18 @@ use crate::configuration::world_config::boundaries::BoundariesConfig;
 use crate::server::network::Server;
 use crate::server::server_address::ServerAddress;
 use crate::server_state::{ServerState, ServerStateBuilderError};
-use std::path::PathBuf;
+use std::path::Path;
 use std::process::ExitCode;
 use tokio_util::sync::CancellationToken;
 use tracing::{Level, debug, error};
+use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
-pub async fn start_server(
-    cli: &crate::cli::Cli,
-    cancellation_token: Option<&CancellationToken>,
-) -> ExitCode {
-    enable_logging(cli.verbose);
+pub async fn start_server(cli: &Cli, cancellation_token: Option<&CancellationToken>) -> ExitCode {
+    let _log_guard = enable_logging(cli);
+
     let Some(cfg) = load_configuration(&cli.config_path) else {
         return ExitCode::FAILURE;
     };
@@ -47,7 +47,7 @@ pub async fn start_server(
     }
 }
 
-fn load_configuration(config_path: &PathBuf) -> Option<Config> {
+fn load_configuration(config_path: &Path) -> Option<Config> {
     let cfg = load_or_create(config_path);
     match cfg {
         Err(ConfigError::TomlDeserialize(message, ..)) => {
@@ -148,15 +148,32 @@ fn build_state(cfg: Config) -> Result<ServerState, ServerStateBuilderError> {
     server_state_builder.build()
 }
 
-fn enable_logging(verbose: u8) {
-    let log_level = match verbose {
+fn enable_logging(cli: &Cli) -> Option<WorkerGuard> {
+    let log_level = match cli.verbose {
         0 => Level::INFO,
         1 => Level::DEBUG,
         _ => Level::TRACE,
     };
 
-    tracing_subscriber::registry()
+    let registry = tracing_subscriber::registry()
         .with(EnvFilter::from_default_env().add_directive(log_level.into()))
-        .with(tracing_subscriber::fmt::layer().with_target(false))
-        .init();
+        .with(tracing_subscriber::fmt::layer().with_target(false));
+
+    if let Some(log_path) = &cli.log_path {
+        let file_appender = tracing_appender::rolling::daily(log_path, "picolimbo.log");
+        let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
+
+        registry
+            .with(
+                tracing_subscriber::fmt::layer()
+                    .with_target(false)
+                    .with_ansi(false)
+                    .with_writer(non_blocking),
+            )
+            .init();
+        Some(guard)
+    } else {
+        registry.init();
+        None
+    }
 }

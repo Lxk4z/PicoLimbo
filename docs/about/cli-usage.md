@@ -20,7 +20,7 @@ Specify a custom configuration file path:
 pico_limbo --config /path/to/your/config.toml
 ```
 
-### Logging Options
+### Verbosity
 
 Control the verbosity of server logs:
 
@@ -31,6 +31,16 @@ pico_limbo -v
 # Trace-level logging (most verbose)
 pico_limbo -vv
 ```
+
+### File Logging
+
+Enable file logging:
+
+```bash
+pico_limbo --log-path=/var/log/picolimbo
+```
+
+Logging files will be rotated every day.
 
 ### Port override
 
