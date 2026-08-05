@@ -1,4 +1,3 @@
-use crate::data::registry_entry::RegistryEntry;
 use crate::{Registry, RegistryKeys, RegistryManager};
 use pico_identifier::Identifier;
 use std::borrow::Cow;
@@ -26,11 +25,6 @@ pub fn get_tagged_registries(registry_manager: &RegistryManager) -> Vec<TaggedRe
     tag_registries
         .iter()
         .filter_map(|registry_keys| registry_manager.try_get(registry_keys))
-        // Tags are lists of protocol IDs resolved against the registry's own
-        // entries (see `evaluate_tags`). A registry that loaded without entries
-        // therefore produces tags that are all empty, which carries no
-        // information and misinforms clients that act on tag contents.
-        .filter(|registry| registry.has_entries())
         .flat_map(|registry| -> crate::Result<TaggedRegistry> {
             let tags = registry.get_tag_identifiers();
             let registry_identifier = registry.get_registry_key().get_value();
@@ -63,11 +57,7 @@ fn evaluate_tags(registry: &Registry, tag_name: &Identifier) -> crate::Result<Ve
                 evaluate_tags(registry, &identifier.normalize())
             } else {
                 // If it is not a tag, then we should get the protocol ID of the actual value from the registry
-                Ok(registry
-                    .try_get(identifier)
-                    .into_iter()
-                    .map(RegistryEntry::get_protocol_id)
-                    .collect())
+                Ok(registry.protocol_id_of(identifier).into_iter().collect())
             }
         })
         .flatten()

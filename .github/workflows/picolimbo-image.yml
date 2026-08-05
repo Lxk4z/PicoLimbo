@@ -34,7 +34,7 @@ jobs:
       packages: write
 
     env:
-      IMAGE_VERSION: "1.13.2-hi2"
+      IMAGE_VERSION: "1.13.2-hi3"
 
     steps:
       - name: Checkout
