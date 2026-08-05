@@ -1,0 +1,69 @@
+name: PicoLimbo Image
+
+# Gehoert in den Fork unter .github/workflows/picolimbo-image.yml
+#
+# Baut den gepatchten PicoLimbo und pusht ihn nach ghcr.io/<owner>/picolimbo.
+# Der Owner wird aus dem Repository abgeleitet und kleingeschrieben, damit der
+# Workflow sowohl im persoenlichen Fork (Lxk4z) als auch nach einem Umzug in die
+# HeldenInsel-Org funktioniert - ghcr akzeptiert nur lowercase Namespaces.
+#
+# IMAGE_VERSION ist bewusst gepinnt und von Hand hochzuziehen, gleiche Begruendung
+# wie beim Velocity-Build: sonst aendert sich der Limbo ohne Commit im Repo.
+# Schema <upstream>-hi<n> zeigt auf einen Blick, auf welchem Upstream-Stand der
+# eigene Patch sitzt.
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "crates/**"
+      - "pico_libraries/**"
+      - "pico_limbo/**"
+      - "data/generated/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/picolimbo-image.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      IMAGE_VERSION: "1.13.2-hi1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve lowercase image namespace
+        id: ns
+        run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          # Nur amd64 - die Talos-Nodes sind x86_64. arm64 wuerde die Build-Zeit
+          # verdoppeln ohne Nutzen.
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ghcr.io/${{ steps.ns.outputs.owner }}/picolimbo:${{ env.IMAGE_VERSION }}
