@@ -26,6 +26,11 @@ pub fn get_tagged_registries(registry_manager: &RegistryManager) -> Vec<TaggedRe
     tag_registries
         .iter()
         .filter_map(|registry_keys| registry_manager.try_get(registry_keys))
+        // Tags are lists of protocol IDs resolved against the registry's own
+        // entries (see `evaluate_tags`). A registry that loaded without entries
+        // therefore produces tags that are all empty, which carries no
+        // information and misinforms clients that act on tag contents.
+        .filter(|registry| registry.has_entries())
         .flat_map(|registry| -> crate::Result<TaggedRegistry> {
             let tags = registry.get_tag_identifiers();
             let registry_identifier = registry.get_registry_key().get_value();
